@@ -919,23 +919,29 @@ ssl_ctx_callback(CURL *curl, void *ssl_ctx, void *ptr)
 {
     CurlObject *self;
     PYCURL_DECLARE_THREAD_STATE;
-    int r;
+    int r = 0;
 
     UNUSED(curl);
 
+#ifdef SSL_OP_IGNORE_UNEXPECTED_EOF
+    SSL_CTX_set_options((SSL_CTX*)ssl_ctx, SSL_OP_IGNORE_UNEXPECTED_EOF);
+#endif
+
     /* acquire thread */
     self = (CurlObject *)ptr;
-    if (!PYCURL_ACQUIRE_THREAD())
-        return CURLE_FAILED_INIT;
+    if (self->ca_certs_obj) {
+        if (!PYCURL_ACQUIRE_THREAD())
+            return CURLE_FAILED_INIT;
 
-    r = add_ca_certs((SSL_CTX*)ssl_ctx,
-                         PyBytes_AS_STRING(self->ca_certs_obj),
-                         PyBytes_GET_SIZE(self->ca_certs_obj));
+        r = add_ca_certs((SSL_CTX*)ssl_ctx,
+                             PyBytes_AS_STRING(self->ca_certs_obj),
+                             PyBytes_GET_SIZE(self->ca_certs_obj));
 
-    if (r != 0)
-        PyErr_Print();
+        if (r != 0)
+            PyErr_Print();
 
-    PYCURL_RELEASE_THREAD();
+        PYCURL_RELEASE_THREAD();
+    }
     return r == 0 ? CURLE_OK : CURLE_FAILED_INIT;
 }
 #endif

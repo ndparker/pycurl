@@ -257,6 +257,19 @@ util_curl_init(CurlObject *self)
     if (res != CURLE_OK) {
         return (-1);
     }
+
+#if defined(HAVE_CURL_OPENSSL)
+    res = curl_easy_setopt(self->handle, CURLOPT_SSL_CTX_FUNCTION, (curl_ssl_ctx_callback) ssl_ctx_callback);
+    if (res != CURLE_OK) {
+        return (-1);
+    }
+
+    res = curl_easy_setopt(self->handle, CURLOPT_SSL_CTX_DATA, self);
+    if (res != CURLE_OK) {
+        return (-1);
+    }
+#endif
+
     return (0);
 }
 
