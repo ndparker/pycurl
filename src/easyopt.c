@@ -1171,18 +1171,6 @@ do_curl_set_ca_certs(CurlObject *self, PyObject *args)
         self->ca_certs_obj = cadata;
     }
 
-    res = curl_easy_setopt(self->handle, CURLOPT_SSL_CTX_FUNCTION, (curl_ssl_ctx_callback) ssl_ctx_callback);
-    if (res != CURLE_OK) {
-        Py_CLEAR(self->ca_certs_obj);
-        CURLERROR_RETVAL();
-    }
-
-    res = curl_easy_setopt(self->handle, CURLOPT_SSL_CTX_DATA, self);
-    if (res != CURLE_OK) {
-        Py_CLEAR(self->ca_certs_obj);
-        CURLERROR_RETVAL();
-    }
-
     Py_RETURN_NONE;
 }
 #endif
